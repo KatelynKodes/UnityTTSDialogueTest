@@ -20,7 +20,7 @@ namespace UnityLibrary
 
         public delegate void TTSCallback(string message, AudioClip audio);
 
-        public enum IncomingMessageType {
+        public enum MessageType {
             Say,
             SetRate,
             SetVolume,
@@ -30,35 +30,67 @@ namespace UnityLibrary
             SetCapitals,
             SetIntonation,
             SetVoice,
-        }
-        public class IncomingMessage {
-            public IncomingMessageType type;
-            public int param1;
-            public string message;
-            public TTSCallback callback;
-        }
-        
-
-        // queue for tts strings
-        Mutex message_mutex = new Mutex();
-        Queue<IncomingMessage> messages = new Queue<IncomingMessage>();
-        bool isClosing = false;
-        bool isRunning = false;
-
-
-        enum OutgoingMessageType {
             VoiceLineFinished,
         }
 
-        class OutgoingMessage {
-            public OutgoingMessageType type;
+        public class Message {
+            public MessageType type;
+            public int pitchParam;
+            public int rangeParam;
+            public int rateParam;
+            public int wordGapParam;
+            public int capitalsParam;
+            public int volumeParam;
+            public int intonationParam;
+            public float[] voicedata;
             public string message;
-            public float[] data;
             public TTSCallback callback;
         }
 
-        Mutex outgoing_message_mutex = new Mutex();
-        Queue<OutgoingMessage> outgoing_messages = new Queue<OutgoingMessage>();
+
+        // queue for tts strings
+        Mutex message_mutex = new Mutex();
+        private Message _inputMessage = null;
+        private Message _outgoingMessage = null;
+
+        bool _isClosing = false;
+        bool _isRunning = false;
+
+        bool IsClosing
+        {
+            get
+            {
+                bool val = false;
+                message_mutex.WaitOne();
+                val = _isClosing;
+                message_mutex.ReleaseMutex();
+                return val;
+            }
+            set
+            {
+                message_mutex.WaitOne();
+                _isClosing = value;
+                message_mutex.ReleaseMutex();
+            }
+        }
+
+        bool IsRunning
+        {
+            get
+            {
+                bool val = false;
+                message_mutex.WaitOne();
+                val = _isRunning;
+                message_mutex.ReleaseMutex();
+                return val;
+            }
+            set
+            {
+                message_mutex.WaitOne();
+                _isRunning = value;
+                message_mutex.ReleaseMutex();
+            }
+        }
 
         void Awake()
         {
@@ -80,68 +112,70 @@ namespace UnityLibrary
 
         void SpeakerThread()
         {
-            bool waiting_for_line = false;
-            string message_waited_for = "";
-            TTSCallback callback_waited_for = null;
-            SetIsRunning(true);
-            while (IsClosing() == false) {
-                if(waiting_for_line) {
-                    if(Client.VoiceFinished()) {
+            bool waitingForOutput = false;
+            string inputMessageRecieved = "";
+            TTSCallback inputCallback = null;
+            IsRunning = true;
+            while (IsClosing == false) {
+                if (waitingForOutput) {
+                    if (Client.VoiceFinished()) {
                         byte[] new_voice = Client.PopVoice();
-                        float[] voice_float = new float[new_voice.Length/2];
+                        float[] voice_float = new float[new_voice.Length / 2];
 
-                        for(int i = 0; i < voice_float.Length; i++) {
+                        for (int i = 0; i < voice_float.Length; i++) {
                             //if(BitConverter.IsLittleEndian) 
-                            voice_float[i] = (float)BitConverter.ToInt16(new_voice, i*2)/(float)short.MaxValue;
+                            voice_float[i] = (float)BitConverter.ToInt16(new_voice, i * 2) / (float)short.MaxValue;
                         }
-                        OutgoingMessage om = new OutgoingMessage();
-                        om.type = OutgoingMessageType.VoiceLineFinished;
-                        om.data = voice_float;
-                        om.message = message_waited_for;
-                        om.callback = callback_waited_for;
 
-                        outgoing_message_mutex.WaitOne();
-                        outgoing_messages.Enqueue(om);
-                        outgoing_message_mutex.ReleaseMutex();
-                        waiting_for_line = false;
-                        message_waited_for = "";
-                        callback_waited_for = null;
+                        Message om = new Message();
+                        om.type = MessageType.VoiceLineFinished;
+                        om.voicedata = voice_float;
+                        om.message = inputMessageRecieved;
+                        om.callback = inputCallback;
+
+                        message_mutex.WaitOne();
+                        _outgoingMessage = om;
+                        message_mutex.ReleaseMutex();
+                        waitingForOutput = false;
+                        inputMessageRecieved = "";
+                        inputCallback = null;
                     }
-                } else if (HasMessage()) {
+                } else if (HasInputMessage()) {
                     try
                     {
-                        IncomingMessage msg = PopMessage();
-                        switch(msg.type) { 
-                            case IncomingMessageType.Say:
+                        Message msg = _inputMessage;
+                        switch (msg.type) {
+                            case MessageType.Say:
                                 Client.Speak(msg.message);
                                 //Client.SpeakSSML(msg);
 
-                                message_waited_for = msg.message;
-                                callback_waited_for = msg.callback;
-                                waiting_for_line = true;
+                                inputMessageRecieved = msg.message;
+                                inputCallback = msg.callback;
+                                waitingForOutput = true;
+                                _inputMessage = null;
                                 break;
-                            case IncomingMessageType.SetPitch:
-                                Client.SetPitch(msg.param1);
+                            case MessageType.SetPitch:
+                                Client.SetPitch(msg.pitchParam);
                                 break;
-                            case IncomingMessageType.SetRange:
-                                Client.SetRange(msg.param1);
+                            case MessageType.SetRange:
+                                Client.SetRange(msg.rangeParam);
                                 break;
-                            case IncomingMessageType.SetRate:
-                                Client.SetRate(msg.param1);
+                            case MessageType.SetRate:
+                                Client.SetRate(msg.rateParam);
                                 break;
-                            case IncomingMessageType.SetVolume:
-                                Client.SetVolume(msg.param1);
+                            case MessageType.SetVolume:
+                                Client.SetVolume(msg.volumeParam);
                                 break;
-                            case IncomingMessageType.SetWordGap:
-                                Client.SetWordgap(msg.param1);
+                            case MessageType.SetWordGap:
+                                Client.SetWordgap(msg.wordGapParam);
                                 break;
-                            case IncomingMessageType.SetCapitals:
-                                Client.SetCapitals(msg.param1);
+                            case MessageType.SetCapitals:
+                                Client.SetCapitals(msg.capitalsParam);
                                 break;
-                            case IncomingMessageType.SetIntonation:
-                                Client.SetIntonation(msg.param1);
+                            case MessageType.SetIntonation:
+                                Client.SetIntonation(msg.intonationParam);
                                 break;
-                            case IncomingMessageType.SetVoice:
+                            case MessageType.SetVoice:
                                 Client.SetVoiceByName(msg.message);
                                 break;
 
@@ -155,100 +189,58 @@ namespace UnityLibrary
 
                 Thread.Sleep(8);
             }
-            isRunning = false;
+            _isRunning = false;
         }
 
         // adds string to TTS queue
         public void Say(string msg, TTSCallback callback)
         {
-            if (IsClosing() == true || IsRunning() == false) return;
-            if (string.IsNullOrEmpty(msg)) return;
+            if (IsClosing || !IsRunning || string.IsNullOrEmpty(msg)) return;
 
-            IncomingMessage im = new IncomingMessage();
-            im.type = IncomingMessageType.Say;
+            Message im = new Message();
+            im.type = MessageType.Say;
             im.message = msg;
             im.callback = callback;
-            QueueMessage(im);
+            _inputMessage = im;
+            //QueueMessage(im);
         }
 
-        public void QueueMessage(IncomingMessage im) {
-            message_mutex.WaitOne();
-            messages.Enqueue(im);
-            message_mutex.ReleaseMutex();
-        }
-
-        private bool HasMessage()
+        private bool HasInputMessage()
         {
             bool ret = false;
             message_mutex.WaitOne();
-            if(messages.Count > 0) {
+            if(_inputMessage != null) {
                 ret = true;
             }
             message_mutex.ReleaseMutex();
             return ret;
         }
 
-        private IncomingMessage PopMessage() {
-            IncomingMessage im = null;
-            message_mutex.WaitOne();
-            if(messages.Count > 0) {
-                im = messages.Dequeue();
-            }
-            message_mutex.ReleaseMutex();
-            return im;
-        }
-
-        public void SetIsClosing(bool val) {
-            message_mutex.WaitOne();
-            isClosing = val;
-            message_mutex.ReleaseMutex();
-        }
-
-        public void SetIsRunning(bool val) { 
-            message_mutex.WaitOne();
-            isRunning = val;
-            message_mutex.ReleaseMutex();
-        }
-
-        public bool IsClosing() {
-            bool val = false;
-            message_mutex.WaitOne();
-            val = isClosing;
-            message_mutex.ReleaseMutex();
-            return val;
-        }
-
-        public bool IsRunning() {
-            bool val = false;
-            message_mutex.WaitOne();
-            val = isRunning;
-            message_mutex.ReleaseMutex();
-            return val;
-        }
-
         public void Update()
         {
-            OutgoingMessage om = null;
-            outgoing_message_mutex.WaitOne();
-            if(outgoing_messages.Count > 0) {
-                om = outgoing_messages.Dequeue();
+            Message om = null;
+            message_mutex.WaitOne();
+            if(_outgoingMessage != null) {
+                om = _outgoingMessage;
+                _outgoingMessage = null;
             }
-            outgoing_message_mutex.ReleaseMutex();
-            if(om != null) {
-                AudioClip ac = AudioClip.Create("voice", om.data.Length, 1, Client.sampleRate, false);
-                ac.SetData(om.data,0);
-                om.callback(om.message,ac);
+            message_mutex.ReleaseMutex();
+            if (om != null)
+            {
+                AudioClip ac = AudioClip.Create("voice", om.voicedata.Length, 1, Client.sampleRate, false);
+                ac.SetData(om.voicedata, 0);
+                om.callback(om.message, ac); 
             }
         }
 
         private void OnDestroy()
         {
             Client.Stop();
-            SetIsClosing(true);
+            _isClosing = true;
 
             int wait_counter = 2000;
             // NOTE this will hang unity, until speech has stopped (otherwise crash)
-            while (IsRunning()) { 
+            while (IsRunning) { 
                 Thread.Sleep(1); 
                 if(wait_counter-- < 0) {
                     Debug.LogError("Sound system dindn't shut down in time.");
