@@ -118,7 +118,7 @@ namespace ESpeakWrapper
                 range = 100;
             }
 
-            Error result = espeak_SetParameter(Parameter.Range, range, ParameterType.Absolute);
+             Error result = espeak_SetParameter(Parameter.Range, range, ParameterType.Absolute);
             return CheckResult(result);
         }
 

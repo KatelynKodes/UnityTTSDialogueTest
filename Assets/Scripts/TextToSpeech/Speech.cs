@@ -13,7 +13,26 @@ namespace UnityLibrary
     [DefaultExecutionOrder(-100)]
     public class Speech : MonoBehaviour
     {
-        public string voiceID = "Tweaky";
+        [SerializeField]
+        private string _voiceID = "Tweaky";
+
+        [Range(0, 100), SerializeField]
+        private int _voicePitch = 3;
+
+        [Range(0, 100), SerializeField]
+        private int _voiceRange = 4;
+
+        [Range(80, 450), SerializeField]
+        private int _voiceRate = 80;
+
+        [Range(0, 200), SerializeField]
+        private int _voiceVolume = 100;
+
+        [SerializeField]
+        private int _voiceInnotation = 9;
+
+        [SerializeField]
+        private int _voiceWordGap = 7;
 
         // singleton isntance
         public static Speech instance;
@@ -101,9 +120,14 @@ namespace UnityLibrary
             datafolder = datafolder.Replace("\\", "/");
             Client.Initialize(datafolder);
 
-            // select voice
-            var setvoice = Client.SetVoiceByName(voiceID);
-            if (setvoice == false) Debug.Log("Failed settings voice: " + voiceID);
+            // Set Default voice data
+            if (!Client.SetVoiceByName(_voiceID)) Debug.Log("Failed settings voice: " + _voiceID);
+            if (!Client.SetPitch(_voicePitch)) Debug.Log("Failed to set voice pitch to: " + _voicePitch);
+            if (!Client.SetRange(_voiceRange)) Debug.Log("Failed to set voice range to: " + _voiceRange);
+            if (!Client.SetRate(_voiceRate)) Debug.Log("Failed to set voice range to: " + _voiceRate);
+            if (!Client.SetVolume(_voiceVolume)) Debug.Log("Failed to set voice range to: " + _voiceVolume);
+            if (!Client.SetIntonation(_voiceInnotation)) Debug.Log("Failed to set voice innotation to:" + _voiceInnotation);
+            if (!Client.SetWordgap(_voiceWordGap)) Debug.Log("Failed to set voice word gap to" + _voiceWordGap);
 
             // start thread for processing received TTS strings
             Thread thread = new Thread(new ThreadStart(SpeakerThread));
@@ -202,7 +226,62 @@ namespace UnityLibrary
             im.message = msg;
             im.callback = callback;
             _inputMessage = im;
-            //QueueMessage(im);
+        }
+
+        public void SetRate(int rate)
+        {
+            Message im = new Message();
+            im.type = MessageType.SetRate;
+            _inputMessage = im;
+        }
+
+        public void SetVolume(int volume)
+        {
+            Message im = new Message();
+            im.type = MessageType.SetVolume;
+            _inputMessage = im;
+        }
+
+        public void SetVoicePitch(int pitch)
+        {
+            Message im = new Message();
+            im.type = MessageType.SetPitch;
+            _inputMessage = im;
+        }
+
+        public void SetVoiceRange(int range)
+        {
+            Message im = new Message();
+            im.type = MessageType.SetRange;
+            _inputMessage = im;
+        }
+
+        public void SetWordGap(int wordGap)
+        {
+            Message im = new Message();
+            im.type = MessageType.SetWordGap;
+            _inputMessage = im;
+        }
+
+        public void SetCapitals(int capitals)
+        {
+            Message im = new Message();
+            im.type = MessageType.SetCapitals;
+            _inputMessage = im;
+        }
+
+        public void SetIntonation(int Intonation)
+        {
+            Message im = new Message();
+            im.type = MessageType.SetIntonation;
+            _inputMessage = im;
+        }
+
+        public void SetVoice(string voiceName)
+        {
+            Message im = new Message();
+            im.type = MessageType.SetVoice;
+            _inputMessage = im;
         }
 
         private bool HasInputMessage()
