@@ -179,19 +179,24 @@ namespace UnityLibrary
                                 _inputMessage = null;
                                 break;
                             case MessageType.SetPitch:
-                                Client.SetPitch(msg.pitchParam);
+                                _voicePitch = msg.pitchParam;
+                                Client.SetPitch(_voicePitch);
                                 break;
                             case MessageType.SetRange:
-                                Client.SetRange(msg.rangeParam);
+                                _voiceRange = msg.rangeParam;
+                                Client.SetRange(_voiceRange);
                                 break;
                             case MessageType.SetRate:
-                                Client.SetRate(msg.rateParam);
+                                _voiceRate = msg.rateParam;
+                                Client.SetRate(_voiceRate);
                                 break;
                             case MessageType.SetVolume:
-                                Client.SetVolume(msg.volumeParam);
+                                _voiceVolume = msg.volumeParam;
+                                Client.SetVolume(_voiceVolume);
                                 break;
                             case MessageType.SetWordGap:
-                                Client.SetWordgap(msg.wordGapParam);
+                                _voiceWordGap = msg.wordGapParam;
+                                Client.SetWordgap(_voiceWordGap);
                                 break;
                             case MessageType.SetCapitals:
                                 Client.SetCapitals(msg.capitalsParam);
@@ -200,7 +205,8 @@ namespace UnityLibrary
                                 Client.SetIntonation(msg.intonationParam);
                                 break;
                             case MessageType.SetVoice:
-                                Client.SetVoiceByName(msg.message);
+                                _voiceID = msg.message;
+                                Client.SetVoiceByName(_voiceID);
                                 break;
 
                         }
