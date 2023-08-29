@@ -11,8 +11,6 @@ public class DialogueManager : MonoBehaviour
     private TextMeshProUGUI _dialogueText;
     [SerializeField]
     private TextMeshProUGUI _nameText;
-
-    private Speech _SpeechManager;
     private AudioSource _audioSource;
 
     private Dialogue _currentConversation;
@@ -20,7 +18,6 @@ public class DialogueManager : MonoBehaviour
 
     private void Awake()
     {
-        _SpeechManager = FindObjectOfType<Speech>();
         _audioSource = GetComponent<AudioSource>();
     }
 
@@ -38,10 +35,10 @@ public class DialogueManager : MonoBehaviour
     public void StartDialogue(Dialogue conversation)
     {
         //Set the voice settings
-        _SpeechManager.SetVoice(conversation.character.characterVoice);
-        _SpeechManager.SetVoicePitch(conversation.character.characterVoicePitch);
-        _SpeechManager.SetVoiceRange(conversation.character.characterVoiceRange);
-        _SpeechManager.SetRate(conversation.character.characterVoiceRate);
+        Speech.instance.SetVoice(conversation.character.characterVoice);
+        Speech.instance.SetVoicePitch(conversation.character.characterVoicePitch);
+        Speech.instance.SetVoiceRange(conversation.character.characterVoiceRange);
+        Speech.instance.SetRate(conversation.character.characterVoiceRate);
 
         //Set the currentConversation
         _currentConversation = conversation;
@@ -59,8 +56,8 @@ public class DialogueManager : MonoBehaviour
             return;
         }
 
-        Debug.Log(_currentConversation.dialogue[_currentDialogueLine].line);
-        _SpeechManager.Say(_currentConversation.dialogue[_currentDialogueLine].pronunciation, TTSCallback);
+        //Debug.Log(_currentConversation.dialogue[_currentDialogueLine].line);
+        Speech.instance.Say(_currentConversation.dialogue[_currentDialogueLine].pronunciation, TTSCallback);
         _currentDialogueLine++;
     }
 

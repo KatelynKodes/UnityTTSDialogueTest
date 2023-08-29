@@ -168,6 +168,8 @@ namespace UnityLibrary
                     try
                     {
                         Message msg = _inputMessage;
+                        Debug.Log("Input Message Recieved:" + _inputMessage.message);
+
                         switch (msg.type) {
                             case MessageType.Say:
                                 Client.Speak(msg.message);
@@ -181,32 +183,48 @@ namespace UnityLibrary
                             case MessageType.SetPitch:
                                 _voicePitch = msg.pitchParam;
                                 Client.SetPitch(_voicePitch);
+                                _inputMessage = null;
                                 break;
                             case MessageType.SetRange:
                                 _voiceRange = msg.rangeParam;
                                 Client.SetRange(_voiceRange);
+                                _inputMessage = null;
                                 break;
                             case MessageType.SetRate:
                                 _voiceRate = msg.rateParam;
                                 Client.SetRate(_voiceRate);
+                                _inputMessage = null;
                                 break;
                             case MessageType.SetVolume:
                                 _voiceVolume = msg.volumeParam;
                                 Client.SetVolume(_voiceVolume);
+                                _inputMessage = null;
                                 break;
                             case MessageType.SetWordGap:
                                 _voiceWordGap = msg.wordGapParam;
                                 Client.SetWordgap(_voiceWordGap);
+                                _inputMessage = null;
                                 break;
                             case MessageType.SetCapitals:
                                 Client.SetCapitals(msg.capitalsParam);
+                                _inputMessage = null;
                                 break;
                             case MessageType.SetIntonation:
                                 Client.SetIntonation(msg.intonationParam);
+                                _inputMessage = null;
                                 break;
                             case MessageType.SetVoice:
                                 _voiceID = msg.message;
-                                Client.SetVoiceByName(_voiceID);
+                                Debug.Log(_voiceID);
+                                if (!Client.SetVoiceByName(_voiceID))
+                                {
+                                    Debug.Log("Could not set voice to " + _voiceID);
+                                }
+                                else
+                                {
+                                    Debug.Log("Set Voice to" + _voiceID);
+                                }
+                                _inputMessage = null;
                                 break;
 
                         }
@@ -236,57 +254,77 @@ namespace UnityLibrary
 
         public void SetRate(int rate)
         {
+            if (IsClosing || !IsRunning || rate < 0) return;
+
             Message im = new Message();
             im.type = MessageType.SetRate;
+            im.rateParam = rate;
             _inputMessage = im;
         }
 
         public void SetVolume(int volume)
         {
+            if (IsClosing || !IsRunning || volume < 0) return;
+
             Message im = new Message();
             im.type = MessageType.SetVolume;
+            im.volumeParam = volume;
             _inputMessage = im;
         }
 
         public void SetVoicePitch(int pitch)
         {
+            if (IsClosing || !IsRunning || pitch < 0) return;
+
             Message im = new Message();
             im.type = MessageType.SetPitch;
+            im.pitchParam = pitch;
             _inputMessage = im;
         }
 
         public void SetVoiceRange(int range)
         {
+            if (IsClosing || !IsRunning || range < 0) return;
             Message im = new Message();
             im.type = MessageType.SetRange;
+            im.rangeParam = range;
             _inputMessage = im;
         }
 
         public void SetWordGap(int wordGap)
         {
+            if (IsClosing || !IsRunning || wordGap < 0) return;
             Message im = new Message();
             im.type = MessageType.SetWordGap;
+            im.wordGapParam = wordGap;
             _inputMessage = im;
         }
 
         public void SetCapitals(int capitals)
         {
+            if (IsClosing || !IsRunning || capitals < 0) return;
             Message im = new Message();
             im.type = MessageType.SetCapitals;
+            im.capitalsParam = capitals;
             _inputMessage = im;
         }
 
         public void SetIntonation(int Intonation)
         {
+            if (IsClosing || !IsRunning || Intonation < 0) return;
             Message im = new Message();
             im.type = MessageType.SetIntonation;
+            im.intonationParam = Intonation;
             _inputMessage = im;
         }
 
         public void SetVoice(string voiceName)
         {
+            if (IsClosing || !IsRunning || string.IsNullOrEmpty(voiceName)) return;
+
             Message im = new Message();
             im.type = MessageType.SetVoice;
+            im.message = voiceName;
             _inputMessage = im;
         }
 

@@ -9,8 +9,11 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b42a4a9773c4bdb4f8f72503090ae15f, type: 3}
-  m_Name: Character1DialogueText
+  m_Script: {fileID: 11500000, guid: 767b405440a5f684991cc5136657f862, type: 3}
+  m_Name: RedSquareChar
   m_EditorClassIdentifier: 
-  character: {fileID: 0}
-  dialogue: []
+  characterName: Red Square
+  characterVoice: klatt3
+  characterVoicePitch: 40
+  characterVoiceRange: 16
+  characterVoiceRate: 133
