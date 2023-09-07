@@ -14,6 +14,17 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   character: {fileID: 11400000, guid: ebaef8ac8f7352747845f041a73035f4, type: 2}
   dialogue:
-  - line: Testing Testing 1, 2, 3, 4
-    pronunciation: Testing, testing. One, Two, Three, Four.
+  - line: This is a text to speech dialogue demo
+    pronunciation: this is a text to speech die-a-log demo.
+  - line: Dialogue text and dialogue pronunciation is stored in scriptable objects.
+    pronunciation: die-a-log text and die-a-log prononciaytion is stored in scriptable
+      objects.
+  - line: The text is displayed on screen while the text to speech scripts use the
+      prononciation fields to repeat the text aloud.
+    pronunciation: the text is displayed on screen while the text to speech scripts
+      use the prononciaytion fields to repeat the text ahloud.
+  - line: The prononciation field exists to hopefully make the text to speech sound
+      more clear
+    pronunciation: the prononciaytion fields exist to hopefullee make the text to
+      speech sound more clear.
   branchingDialogue: {fileID: 0}

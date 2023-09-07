@@ -135,6 +135,7 @@ GameObject:
   - component: {fileID: 19256101}
   - component: {fileID: 19256100}
   - component: {fileID: 19256099}
+  - component: {fileID: 19256103}
   m_Layer: 0
   m_Name: RedSquare
   m_TagString: Untagged
@@ -228,6 +229,19 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &19256103
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 19256098}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 64e0371348a861c479fd02077caf1b2e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  startingDialogue: {fileID: 11400000, guid: d3c2a2e349441d14088a11205d2b70ae, type: 2}
 --- !u!1 &145078017
 GameObject:
   m_ObjectHideFlags: 0
@@ -896,9 +910,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Options:
-    dllPathPattern: '{assets}/Plugins/__{name}'
+    dllPathPattern: '{assets}/Plugins/espeak/__{name}'
     assemblyPaths: []
-    loadingMode: 0
+    loadingMode: 1
     unixDlopenFlags: 1
     threadSafe: 0
     enableCrashLogs: 0

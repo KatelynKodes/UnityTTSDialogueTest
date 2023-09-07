@@ -39,21 +39,7 @@ namespace UnityLibrary
 
         public delegate void TTSCallback(string message, AudioClip audio);
 
-        public enum MessageType {
-            Say,
-            SetRate,
-            SetVolume,
-            SetPitch,
-            SetRange,
-            SetWordGap,
-            SetCapitals,
-            SetIntonation,
-            SetVoice,
-            VoiceLineFinished,
-        }
-
         public class Message {
-            public MessageType type;
             public int pitchParam;
             public int rangeParam;
             public int rateParam;
@@ -121,13 +107,13 @@ namespace UnityLibrary
             Client.Initialize(datafolder);
 
             // Set Default voice data
-            if (!Client.SetVoiceByName(_voiceID)) Debug.Log("Failed settings voice: " + _voiceID);
-            if (!Client.SetPitch(_voicePitch)) Debug.Log("Failed to set voice pitch to: " + _voicePitch);
-            if (!Client.SetRange(_voiceRange)) Debug.Log("Failed to set voice range to: " + _voiceRange);
-            if (!Client.SetRate(_voiceRate)) Debug.Log("Failed to set voice range to: " + _voiceRate);
-            if (!Client.SetVolume(_voiceVolume)) Debug.Log("Failed to set voice range to: " + _voiceVolume);
-            if (!Client.SetIntonation(_voiceInnotation)) Debug.Log("Failed to set voice innotation to:" + _voiceInnotation);
-            if (!Client.SetWordgap(_voiceWordGap)) Debug.Log("Failed to set voice word gap to" + _voiceWordGap);
+            SetVoice(_voiceID);
+            SetVoicePitch(_voicePitch);
+            SetVoiceRange(_voiceRange);
+            SetRate(_voiceRate);
+            SetVolume(_voiceVolume);
+            SetIntonation(_voiceInnotation);
+            SetWordGap(_voiceWordGap);
 
             // start thread for processing received TTS strings
             Thread thread = new Thread(new ThreadStart(SpeakerThread));
@@ -152,7 +138,6 @@ namespace UnityLibrary
                         }
 
                         Message om = new Message();
-                        om.type = MessageType.VoiceLineFinished;
                         om.voicedata = voice_float;
                         om.message = inputMessageRecieved;
                         om.callback = inputCallback;
@@ -164,72 +149,21 @@ namespace UnityLibrary
                         inputMessageRecieved = "";
                         inputCallback = null;
                     }
-                } else if (HasInputMessage()) {
+                } 
+                else if (HasInputMessage()) {
                     try
                     {
                         Message msg = _inputMessage;
-                        Debug.Log("Input Message Recieved:" + _inputMessage.message);
 
-                        switch (msg.type) {
-                            case MessageType.Say:
-                                Client.Speak(msg.message);
-                                //Client.SpeakSSML(msg);
+                        Client.Speak(msg.message);
+                        //Client.SpeakSSML(msg);
 
-                                inputMessageRecieved = msg.message;
-                                inputCallback = msg.callback;
-                                waitingForOutput = true;
-                                _inputMessage = null;
-                                break;
-                            case MessageType.SetPitch:
-                                _voicePitch = msg.pitchParam;
-                                Client.SetPitch(_voicePitch);
-                                _inputMessage = null;
-                                break;
-                            case MessageType.SetRange:
-                                _voiceRange = msg.rangeParam;
-                                Client.SetRange(_voiceRange);
-                                _inputMessage = null;
-                                break;
-                            case MessageType.SetRate:
-                                _voiceRate = msg.rateParam;
-                                Client.SetRate(_voiceRate);
-                                _inputMessage = null;
-                                break;
-                            case MessageType.SetVolume:
-                                _voiceVolume = msg.volumeParam;
-                                Client.SetVolume(_voiceVolume);
-                                _inputMessage = null;
-                                break;
-                            case MessageType.SetWordGap:
-                                _voiceWordGap = msg.wordGapParam;
-                                Client.SetWordgap(_voiceWordGap);
-                                _inputMessage = null;
-                                break;
-                            case MessageType.SetCapitals:
-                                Client.SetCapitals(msg.capitalsParam);
-                                _inputMessage = null;
-                                break;
-                            case MessageType.SetIntonation:
-                                Client.SetIntonation(msg.intonationParam);
-                                _inputMessage = null;
-                                break;
-                            case MessageType.SetVoice:
-                                _voiceID = msg.message;
-                                Debug.Log(_voiceID);
-                                if (!Client.SetVoiceByName(_voiceID))
-                                {
-                                    Debug.Log("Could not set voice to " + _voiceID);
-                                }
-                                else
-                                {
-                                    Debug.Log("Set Voice to" + _voiceID);
-                                }
-                                _inputMessage = null;
-                                break;
-
-                        }
+                        inputMessageRecieved = msg.message;
+                        inputCallback = msg.callback;
+                        waitingForOutput = true;
+                        _inputMessage = null;
                     }
-                    catch (System.Exception e)
+                    catch (Exception e)
                     {
                         Debug.LogException(e);
                     }
@@ -240,94 +174,151 @@ namespace UnityLibrary
             _isRunning = false;
         }
 
-        // adds string to TTS queue
+        /// <summary>
+        /// Creates an inputMessage for the TTS to speak
+        /// </summary>
+        /// <param name="msg"> The message for the tts to say </param>
+        /// <param name="callback"> The callback delegate for the audio source</param>
         public void Say(string msg, TTSCallback callback)
         {
             if (IsClosing || !IsRunning || string.IsNullOrEmpty(msg)) return;
 
             Message im = new Message();
-            im.type = MessageType.Say;
             im.message = msg;
             im.callback = callback;
             _inputMessage = im;
         }
 
+        /// <summary>
+        /// Sets the rate of the voice
+        /// </summary>
+        /// <param name="rate">value of new voice rate</param>
         public void SetRate(int rate)
         {
-            if (IsClosing || !IsRunning || rate < 0) return;
+            if (IsClosing || !IsRunning || rate < 80 || rate > 450) return;
 
-            Message im = new Message();
-            im.type = MessageType.SetRate;
-            im.rateParam = rate;
-            _inputMessage = im;
+            int defaultRate = _voiceRate;
+            _voiceRate = rate;
+            if (!Client.SetRate(_voiceRate))
+            {
+                Debug.Log("Could not set the rate volume to " + _voiceRate);
+                _voiceRate = defaultRate;
+                Client.SetRate(_voiceRate);
+            }
         }
 
+        /// <summary>
+        /// Sets the volume of the voice
+        /// </summary>
+        /// <param name="volume"> value of new voice volume </param>
         public void SetVolume(int volume)
         {
-            if (IsClosing || !IsRunning || volume < 0) return;
+            if (IsClosing || !IsRunning) return;
 
-            Message im = new Message();
-            im.type = MessageType.SetVolume;
-            im.volumeParam = volume;
-            _inputMessage = im;
+            int defualtVolume = _voiceVolume;
+            _voiceVolume = volume;
+            if (!Client.SetVolume(_voiceVolume))
+            {
+                Debug.Log("Could not set the voice volume to " + _voiceVolume);
+                _voiceVolume = defualtVolume;
+                Client.SetVolume(_voiceVolume);
+            }
         }
 
+        /// <summary>
+        /// Sets the voice pitch
+        /// </summary>
+        /// <param name="pitch">value of new voice pitch</param>
         public void SetVoicePitch(int pitch)
         {
-            if (IsClosing || !IsRunning || pitch < 0) return;
+            if (IsClosing || !IsRunning) return;
 
-            Message im = new Message();
-            im.type = MessageType.SetPitch;
-            im.pitchParam = pitch;
-            _inputMessage = im;
+            int defaultVoicePitch = _voicePitch;
+            _voicePitch = pitch;
+            if (!Client.SetPitch(_voicePitch))
+            { 
+                Debug.Log("Could not set voice pitch to " + _voicePitch);
+                _voicePitch = defaultVoicePitch;
+                Client.SetPitch(_voicePitch);
+            }
         }
 
+        /// <summary>
+        /// Sets the voice range
+        /// </summary>
+        /// <param name="range">value of new voice range</param>
         public void SetVoiceRange(int range)
         {
-            if (IsClosing || !IsRunning || range < 0) return;
-            Message im = new Message();
-            im.type = MessageType.SetRange;
-            im.rangeParam = range;
-            _inputMessage = im;
+            if (IsClosing || !IsRunning) return;
+
+            int defaultRange = _voiceRange;
+            _voiceRange = range;
+            if (!Client.SetRange(_voiceRange))
+            {
+                Debug.Log("Could not set voice range to " + _voiceRange);
+                _voiceRange = defaultRange;
+                Client.SetRange(_voiceRange);
+            }
         }
 
+        /// <summary>
+        /// Sets the word gap of the voice
+        /// </summary>
+        /// <param name="wordGap"> integer value of new word gap</param>
         public void SetWordGap(int wordGap)
         {
-            if (IsClosing || !IsRunning || wordGap < 0) return;
-            Message im = new Message();
-            im.type = MessageType.SetWordGap;
-            im.wordGapParam = wordGap;
-            _inputMessage = im;
+            if (IsClosing || !IsRunning) return;
+
+            int defaultWordGap = _voiceWordGap;
+            _voiceWordGap = wordGap;
+            if (!Client.SetWordgap(_voiceWordGap))
+            {
+                Debug.Log("Could not set the word gap to " + _voiceWordGap);
+                _voiceWordGap = defaultWordGap;
+                Client.SetWordgap(_voiceWordGap);
+            }
         }
 
-        public void SetCapitals(int capitals)
+        /// <summary>
+        /// Sets the voice innotation
+        /// </summary>
+        /// <param name="intonation">integer value of new voice innotation</param>
+        public void SetIntonation(int intonation)
         {
-            if (IsClosing || !IsRunning || capitals < 0) return;
-            Message im = new Message();
-            im.type = MessageType.SetCapitals;
-            im.capitalsParam = capitals;
-            _inputMessage = im;
+            if (IsClosing || !IsRunning || intonation < 0) return;
+
+            int defaultInnotation = _voiceInnotation;
+            _voiceInnotation = intonation;
+            if (!Client.SetIntonation(_voiceInnotation))
+            {
+                Debug.Log("Could not set voice innotation to" + _voiceInnotation);
+                _voiceInnotation = defaultInnotation;
+                Client.SetIntonation(defaultInnotation);
+            }
         }
 
-        public void SetIntonation(int Intonation)
-        {
-            if (IsClosing || !IsRunning || Intonation < 0) return;
-            Message im = new Message();
-            im.type = MessageType.SetIntonation;
-            im.intonationParam = Intonation;
-            _inputMessage = im;
-        }
-
+        /// <summary>
+        /// Sets the voice 
+        /// </summary>
+        /// <param name="voiceName"></param>
         public void SetVoice(string voiceName)
         {
             if (IsClosing || !IsRunning || string.IsNullOrEmpty(voiceName)) return;
 
-            Message im = new Message();
-            im.type = MessageType.SetVoice;
-            im.message = voiceName;
-            _inputMessage = im;
+            string defaultVoice = _voiceID;
+            _voiceID = voiceName;
+            if (!Client.SetVoiceByName(_voiceID))
+            {
+                Debug.Log("Could not set voice to " + _voiceID);
+                _voiceID = defaultVoice;
+                Client.SetVoiceByName(_voiceID);
+            }
         }
 
+        /// <summary>
+        /// Checks if inputmessage is null
+        /// </summary>
+        /// <returns>true if inputmessage is not null</returns>
         private bool HasInputMessage()
         {
             bool ret = false;

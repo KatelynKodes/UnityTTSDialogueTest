@@ -7,17 +7,17 @@ using UnityLibrary;
 
 public class DialogueManager : MonoBehaviour
 {
-    [SerializeField]
-    private TextMeshProUGUI _dialogueText;
-    [SerializeField]
-    private TextMeshProUGUI _nameText;
+    //private TextMeshProUGUI _dialogueText;
+    //private TextMeshProUGUI _nameText;
     private AudioSource _audioSource;
 
     private Dialogue _currentConversation;
     private int _currentDialogueLine;
+    public static DialogueManager instance;
 
     private void Awake()
     {
+        instance = this;
         _audioSource = GetComponent<AudioSource>();
     }
 
@@ -49,14 +49,13 @@ public class DialogueManager : MonoBehaviour
 
     private void NextLine()
     {
-        if (_currentDialogueLine > _currentConversation.dialogue.Length)
+        if (_currentDialogueLine >= _currentConversation.dialogue.Length)
         {
             //End the conversation
             EndConversation();
             return;
         }
 
-        //Debug.Log(_currentConversation.dialogue[_currentDialogueLine].line);
         Speech.instance.Say(_currentConversation.dialogue[_currentDialogueLine].pronunciation, TTSCallback);
         _currentDialogueLine++;
     }
