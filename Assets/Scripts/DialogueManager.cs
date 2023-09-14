@@ -7,8 +7,10 @@ using UnityLibrary;
 
 public class DialogueManager : MonoBehaviour
 {
-    //private TextMeshProUGUI _dialogueText;
-    //private TextMeshProUGUI _nameText;
+    [SerializeField]
+    private TextMeshProUGUI _dialogueText;
+    [SerializeField]
+    private TextMeshProUGUI _nameText;
     private AudioSource _audioSource;
 
     private Dialogue _currentConversation;
@@ -40,6 +42,9 @@ public class DialogueManager : MonoBehaviour
         Speech.instance.SetVoiceRange(conversation.character.characterVoiceRange);
         Speech.instance.SetRate(conversation.character.characterVoiceRate);
 
+        //Set the characters name
+        _nameText.text = conversation.character.characterName;
+
         //Set the currentConversation
         _currentConversation = conversation;
 
@@ -47,7 +52,7 @@ public class DialogueManager : MonoBehaviour
         NextLine();
     }
 
-    private void NextLine()
+    public void NextLine()
     {
         if (_currentDialogueLine >= _currentConversation.dialogue.Length)
         {
@@ -56,6 +61,7 @@ public class DialogueManager : MonoBehaviour
             return;
         }
 
+        _dialogueText.text = _currentConversation.dialogue[_currentDialogueLine].line;
         Speech.instance.Say(_currentConversation.dialogue[_currentDialogueLine].pronunciation, TTSCallback);
         _currentDialogueLine++;
     }

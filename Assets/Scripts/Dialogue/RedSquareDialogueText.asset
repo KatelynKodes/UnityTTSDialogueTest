@@ -27,4 +27,4 @@ MonoBehaviour:
       more clear
     pronunciation: the prononciaytion fields exist to hopefullee make the text to
       speech sound more clear.
-  branchingDialogue: {fileID: 0}
+  branchingDialogue: {fileID: 11400000, guid: a65f95b3ef7fcf84c841b1f84a8e24eb, type: 2}

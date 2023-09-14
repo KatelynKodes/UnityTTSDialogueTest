@@ -1,0 +1,27 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b42a4a9773c4bdb4f8f72503090ae15f, type: 3}
+  m_Name: BlueSphereDialogue
+  m_EditorClassIdentifier: 
+  character: {fileID: 11400000, guid: 3e6939a826393684fb1325bf4bfad71a, type: 2}
+  dialogue:
+  - line: You can even change the voice depending on which character is speaking
+    pronunciation: u can even change the voice depending on witch character is speeking.
+  - line: This is done with a character scriptable object.
+    pronunciation: This is done with a character scriptable object.
+  - line: The object contains the voice name and parameters and is used in the dialogue
+      object to define which character is speaking.
+    pronunciation: The object contains the voice name and parameters and is set in
+      the dialog object 2 define which character is speaking.
+  - line: The voice parameters are set at the start of every dialogue
+    pronunciation: the voice parameters are set at the start of every dialog
+  branchingDialogue: {fileID: 0}
