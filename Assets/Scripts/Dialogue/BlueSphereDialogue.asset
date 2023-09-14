@@ -24,4 +24,22 @@ MonoBehaviour:
       the dialog object 2 define which character is speaking.
   - line: The voice parameters are set at the start of every dialogue
     pronunciation: the voice parameters are set at the start of every dialog
+  - line: This system is available on KatelynKodes github page for developers to
+      use.
+    pronunciation: This system is available on katelyn codes git hub page for develowpers
+      to use.
+  - line: Unfortunately, due to Unity's recent statement regarding it's new pricing
+      model. No playable executable will be provided.
+    pronunciation: unfortunately, due to unity's recent statement regarding it's
+      new priceing model. No playable executeable will be provided.
+  - line: In order to run the code on your computer it must be forked from the repository
+      itself
+    pronunciation: In order to run the code on your computer, it must be forked from
+      the repository itself.
+  - line: Special thanks to Mika on Github for the original repository allowing Unity
+      to access ESpeak's voice library and capabilities. This build is simply to
+      attempt to improve it for a specific context
+    pronunciation: Special thanks to Mika on Git-hub for the original repository
+      allowing Unity to access E-Speak's voice library and capabilities. This build
+      is simply to attempt to improve it for a specific context.
   branchingDialogue: {fileID: 0}
